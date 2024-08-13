@@ -25,21 +25,26 @@ def parse_args():
     init_parser = commands.add_parser('init')
     init_parser.set_defaults(func=init)
     
-    # Define the 'hash-object' command and set the function to call as 'hash_object'
+    # Define the 'hash-object' command and set the function to call as 'hash-object'
     # Also, add a required 'file' argument for this command
     hash_object_parser = commands.add_parser('hash-object')
     hash_object_parser.set_defaults(func=hash_object)
     hash_object_parser.add_argument('file')
     
-    # Define the 'cat_file' command and set the function to call as 'cat_file'
+    # Define the 'cat_file' command and set the function to call as 'cat-file'
     # Also, add a required 'object' argument for this command
-    cat_file_parser = commands.add_parser('cat_file')
+    cat_file_parser = commands.add_parser('cat-file')
     cat_file_parser.set_defaults(func=cat_file)
     cat_file_parser.add_argument('object')
     
-    # Define the 'write_tree' command and set the function to call as 'write_tree'
-    write_tree_parser = commands.add_parser('write_tree')
+    # Define the 'write_tree' command and set the function to call as 'write-tree'
+    write_tree_parser = commands.add_parser('write-tree')
     write_tree_parser.set_defaults(func=write_tree)
+    
+    # Define the 'read_tree' command and set the function to call as 'read-tree'
+    read_tree_parser = commands.add_parser('read-tree')
+    read_tree_parser.set_defaults(func=read_tree)
+    read_tree_parser.add_argument('tree')
     
     # Parse the command-line arguments and return the parsed arguments object
     return parser.parse_args()
@@ -58,9 +63,14 @@ def cat_file(args):
     sys.stdout.buffer.write(data.get_object(args.object, expected=None))
 
     # Prints the result of the 'write_tree' function from the 'base' module.
-def write_tree(*args):
+def write_tree(args):
     print(base.write_tree())
     
+    # Retrieves the file OIDs and stores them in the dictionary
+def read_tree(args):
+    base.read_tree(args.tree)
+    
+
     # Initializes a new ugit repository using the 'init' function from the 'data' module.
     # Then, prints a message indicating the initialization of the repository.
 def init(args):

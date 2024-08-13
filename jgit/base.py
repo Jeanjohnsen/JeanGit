@@ -30,6 +30,49 @@ def write_tree(directory='.'):
                    in sorted(entries))
     return data.hash_object(tree.encode(), 'tree')  # Hash the tree object and return its object ID
     
+ 
+ # iter_tree_entries is a generator that will take an OID of a tree, 
+ # tokenize it line-by-line and yield the raw string values.
+def iter_tree_entries(oid):
+    if not oid:
+        return
+    tree = data.get_object(oid, 'tree')
+    for entry in tree.decode().splitlines():
+        type_, oid, name = entry.split(' ', 2)
+        yield type_, oid, name
+    
+    
+        
+ # Recursively retrieves all the files and subdirectories within a tree object.
+ # Returns a dictionary where keys are file/directory paths and values are their corresponding object IDs.
+def get_tree(oid, base_path = ''):
+    result = {}
+    
+    # Iterate over entries in the tree object with the given OID
+    for type_, oid, name in iter_tree_entries(oid):
+        assert '/' not in name  # Ensure that the name does not contain a forward slash
+        assert name not in ('..', '.')  # Ensure that the name is not '..' or '.'
+        
+        # Construct the full path of the current entry
+        path = base_path + name
+        if type_ == 'blob':  # If the entry is a file (blob)
+            result[path] = oid  # Add the file path and its OID to the result dictionary
+        elif type_ == 'tree':  # If the entry is a subdirectory (tree)
+            # Recursively get the tree entries and update the result dictionary
+            result.update(get_tree(oid, f'{path}/')) 
+        else:
+            assert False, f'Unknown tree type {type_}'  # Raise an error for unknown types
+        
+    return result  # Return the dictionary of paths and their corresponding OIDs
+    
+    
+    # Extracts the contents of a tree object and writes them to the filesystem.
+    # Creates the necessary directories and writes files at their respective paths.
+def read_tree(tree_oid):
+    for path, oid in get_tree(tree_oid, base_path='./').items():
+        os.makedirs(os.path.dirname(path), exist_ok=True)  # Create the directory if it doesn't exist
+        with open(path, 'wb') as f:  # Open the file in binary write mode
+            f.write(data.get_object(oid))  # Write the content of the object (blob) to the file
     
     # Determines if a path should be ignored by checking if it contains '.jgit'
     # (i.e., it belongs to the .jgit directory used by this VCS).
