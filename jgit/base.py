@@ -83,26 +83,32 @@ def read_tree(tree_oid):
         with open(path, 'wb') as f:  # Open the file in binary write mode
             f.write(data.get_object(oid))  # Write the content of the object (blob) to the file
     
-   # So i want to make sure that we don't have any old files lying around after read-tree
-   # Therefore  
+
+    # Recursively deletes all files and directories in the current directory,
+    # except for those that are ignored or cannot be removed.
 def empty_current_directory():
     
+    # Traverse the directory tree starting from the current directory,
+    # walking from the deepest directories (bottom) to the top (topdown=False).
     for root, dirnames, filenames in os.walk('.', topdown=False):
-        for filename in filenames:
-            path = os.path.relpath(f'{root}/{filename}')
-            if is_ignored(path) or not os.path.isfile(path):
-                continue
-            os.remove(path)
         
+        # Iterate over all files in the current directory
+        for filename in filenames:
+            path = os.path.relpath(f'{root}/{filename}')  # Get the relative path of the file
+            if is_ignored(path) or not os.path.isfile(path):  # Skip ignored files or non-file paths
+                continue
+            os.remove(path)  # Remove the file
+            
+        # Iterate over all directories in the current directory
         for dirname in dirnames:
-            path = os.path.relpath(f'{root}/{dirname}')
-            if is_ignored(path) or not os.path.isfile(path):
+            path = os.path.relpath(f'{root}/{dirname}')  # Get the relative path of the directory
+            if is_ignored(path) or not os.path.isfile(path):  # Skip ignored directories or non-file paths
                 continue
             try:
-                os.rmdir(path)
-            except(FileNotFoundError, OSError):
+                os.rmdir(path)  # Attempt to remove the directory (only works if it's empty)
+            except (FileNotFoundError, OSError):
+                # If the directory cannot be removed because it's not empty or another issue occurs, ignore the error
                 pass
-
     
     # Determines if a path should be ignored by checking if it contains '.jgit'
     # (i.e., it belongs to the .jgit directory used by this VCS).
