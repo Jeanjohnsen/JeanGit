@@ -1,19 +1,20 @@
 import argparse
 import os
 import sys
+import textwrap
 
 from . import data
 from . import base
 
-    # Entry point for the script. Parses command-line arguments and executes
-    # the corresponding function based on the parsed arguments.
+# Entry point for the script. Parses command-line arguments and executes
+# the corresponding function based on the parsed arguments.
 def main():
     args = parse_args()
     args.func(args)
     
-    # Sets up the argument parser for the command-line interface (CLI).
-    # Defines subcommands ('init', 'hash-object', 'cat_file', 'write_tree'),
-    # and associates each subcommand with a specific function to execute.
+# Sets up the argument parser for the command-line interface (CLI).
+# Defines subcommands ('init', 'hash-object', 'cat_file', 'write_tree'),
+# and associates each subcommand with a specific function to execute.
 def parse_args():
     parser = argparse.ArgumentParser()
     
@@ -50,36 +51,52 @@ def parse_args():
     commit_parser = commands.add_parser('commit')
     commit_parser.set_defaults(func=commit)
     commit_parser.add_argument('-m', '--message', required=True)
-    
+
+    # Define the 'log' command and set the function to call as 'log'
+    log_parser = commands.add_parser('log')
+    log_parser.set_defaults(func=log)
+
     # Parse the command-line arguments and return the parsed arguments object
     return parser.parse_args()
     
-    # Reads the content of the specified file in binary mode,
-    # hashes the content using a method from the 'data' module,
-    # and prints the resulting hash.
+# Reads the content of the specified file in binary mode,
+# hashes the content using a method from the 'data' module,
+# and prints the resulting hash.
 def hash_object(args):
     with open(args.file, 'rb') as f:
         print(data.hash_object(f.read()))
         
-    # Ensures that stdout is flushed and then writes the binary content
-    # of the specified object (retrieved from the 'data' module) to stdout.
+# Ensures that stdout is flushed and then writes the binary content
+# of the specified object (retrieved from the 'data' module) to stdout.
 def cat_file(args):
     sys.stdout.flush()
     sys.stdout.buffer.write(data.get_object(args.object, expected=None))
 
-    # Prints the result of the 'write_tree' function from the 'base' module.
+# Prints the result of the 'write_tree' function from the 'base' module.
 def write_tree(args):
     print(base.write_tree())
     
-    # Retrieves the file OIDs and stores them in the dictionary
+# Retrieves the file OIDs and stores them in the dictionary
 def read_tree(args):
     base.read_tree(args.tree)
 
 def commit(args):
     base.commit(args.message)
-    
 
-    # Initializes a new ugit repository using the 'init' function from the 'data' module.
-    # Then, prints a message indicating the initialization of the repository.
+def log(args):
+    oid = data.get_HEAD()
+
+    while oid:
+        commit = base.get_commit(oid)
+
+        print(f'commmit {oid}\n')
+        print(textwrap.indent(commit.message, '     '))
+        print('')
+
+        oid = commit.parent
+        
+
+# Initializes a new ugit repository using the 'init' function from the 'data' module.
+# Then, prints a message indicating the initialization of the repository.
 def init(args):
     print(f'Initialized empty jgit repository in {os.getcwd()}/{data.GIT_DIR}')
