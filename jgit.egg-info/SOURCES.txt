@@ -1,9 +1,0 @@
-setup.py
-jgit/base.py
-jgit/cli.py
-jgit/data.py
-jgit.egg-info/PKG-INFO
-jgit.egg-info/SOURCES.txt
-jgit.egg-info/dependency_links.txt
-jgit.egg-info/entry_points.txt
-jgit.egg-info/top_level.txt

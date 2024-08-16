@@ -1,2 +1,0 @@
-[console_scripts]
-jgit = jgit.cli:main

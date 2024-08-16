@@ -5,6 +5,8 @@ from . import data
     # Recursively creates a tree object for the directory structure.
     # Iterates over all entries in the specified directory, generating
 def write_tree(directory='.'):
+
+    ensure_jgit_directory()
    
     # a list of (name, oid, type) tuples representing files ('blobs') and subdirectories ('trees').
     entries = []
@@ -37,6 +39,8 @@ def write_tree(directory='.'):
  # iter_tree_entries is a generator that will take an OID of a tree, 
  # tokenize it line-by-line and yield the raw string values.
 def iter_tree_entries(oid):
+
+    ensure_jgit_directory()
     
     if not oid:
         return
@@ -52,6 +56,9 @@ def iter_tree_entries(oid):
  # Recursively retrieves all the files and subdirectories within a tree object.
  # Returns a dictionary where keys are file/directory paths and values are their corresponding object IDs.
 def get_tree(oid, base_path = ''):
+    
+    ensure_jgit_directory()
+    
     result = {}
     
     # Iterate over entries in the tree object with the given OID
@@ -75,7 +82,8 @@ def get_tree(oid, base_path = ''):
     # Extracts the contents of a tree object and writes them to the filesystem.
     # Creates the necessary directories and writes files at their respective paths.
 def read_tree(tree_oid):
-    
+
+    ensure_jgit_directory()
     empty_current_directory() # Make sure to empty the current dir on read_tree
     
     for path, oid in get_tree(tree_oid, base_path='./').items():
@@ -88,6 +96,8 @@ def read_tree(tree_oid):
     # except for those that are ignored or cannot be removed.
 def empty_current_directory():
     
+    ensure_jgit_directory()
+
     # Traverse the directory tree starting from the current directory,
     # walking from the deepest directories (bottom) to the top (topdown=False).
     for root, dirnames, filenames in os.walk('.', topdown=False):
@@ -109,8 +119,55 @@ def empty_current_directory():
             except (FileNotFoundError, OSError):
                 # If the directory cannot be removed because it's not empty or another issue occurs, ignore the error
                 pass
-    
+
+
+    #
+    #
+def commit(message):
+
+    commit = f'tree {write_tree()}\n'
+
+    HEAD = data.get_HEAD()
+    if HEAD:
+        commit += f'parent {HEAD}\n'
+
+    commit += '\n'
+    commit += f'{message}\n'
+
+    oid = data.hash_object(commit.encode(), 'commit')
+
+    data.set_HEAD(oid)
+
+    return oid
+
+
     # Determines if a path should be ignored by checking if it contains '.jgit'
     # (i.e., it belongs to the .jgit directory used by this VCS).
 def is_ignored(path):
     return '.jgit' in path.split('/')
+
+
+def ensure_jgit_directory():
+    """
+    Checks if the .jgit directory and its necessary subdirectories are created.
+    If not, it creates them.
+    """
+    git_dir = '.jgit'
+    objects_dir = f'{git_dir}/objects'
+    
+    # Check if .jgit directory exists
+    if not os.path.isdir(git_dir):
+        print(f"{git_dir} directory does not exist. Initializing the repository...")
+        os.makedirs(git_dir)
+        os.makedirs(objects_dir)
+        print(f"{git_dir} and {objects_dir} directories have been created.")
+    else:
+        # Check if objects directory exists
+        if not os.path.isdir(objects_dir):
+            print(f"{objects_dir} directory does not exist. Creating it now...")
+            os.makedirs(objects_dir)
+            print(f"{objects_dir} directory has been created.")
+        else:
+            print(f"{git_dir} and {objects_dir} directories are already in place.")
+
+    print("Repository structure is set up correctly.")

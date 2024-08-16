@@ -45,6 +45,11 @@ def parse_args():
     read_tree_parser = commands.add_parser('read-tree')
     read_tree_parser.set_defaults(func=read_tree)
     read_tree_parser.add_argument('tree')
+
+    # Define the 'commit' command and set the function to call as 'commit'
+    commit_parser = commands.add_parser('commit')
+    commit_parser.set_defaults(func=commit)
+    commit_parser.add_argument('-m', '--message', required=True)
     
     # Parse the command-line arguments and return the parsed arguments object
     return parser.parse_args()
@@ -69,9 +74,12 @@ def write_tree(args):
     # Retrieves the file OIDs and stores them in the dictionary
 def read_tree(args):
     base.read_tree(args.tree)
+
+def commit(args):
+    base.commit(args.message)
     
 
     # Initializes a new ugit repository using the 'init' function from the 'data' module.
     # Then, prints a message indicating the initialization of the repository.
 def init(args):
-    print(f'Initialized empty ugit repository in {os.getcwd()}/{data.GIT_DIR}')
+    print(f'Initialized empty jgit repository in {os.getcwd()}/{data.GIT_DIR}')
