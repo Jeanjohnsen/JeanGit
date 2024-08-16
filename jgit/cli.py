@@ -55,6 +55,7 @@ def parse_args():
     # Define the 'log' command and set the function to call as 'log'
     log_parser = commands.add_parser('log')
     log_parser.set_defaults(func=log)
+    log_parser.add_argument('oid', nargs='?')
 
     # Parse the command-line arguments and return the parsed arguments object
     return parser.parse_args()
@@ -84,7 +85,7 @@ def commit(args):
     base.commit(args.message)
 
 def log(args):
-    oid = data.get_HEAD()
+    oid = args.oid or data.get_HEAD()
 
     while oid:
         commit = base.get_commit(oid)
