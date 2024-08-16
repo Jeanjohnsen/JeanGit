@@ -1,9 +1,13 @@
 import os
+import itertools
+import operator
+
+from collections import namedtuple
 
 from . import data
 
-    # Recursively creates a tree object for the directory structure.
-    # Iterates over all entries in the specified directory, generating
+# Recursively creates a tree object for the directory structure.
+# Iterates over all entries in the specified directory, generating
 def write_tree(directory='.'):
 
     ensure_jgit_directory()
@@ -36,8 +40,8 @@ def write_tree(directory='.'):
     return data.hash_object(tree.encode(), 'tree')  # Hash the tree object and return its object ID
     
  
- # iter_tree_entries is a generator that will take an OID of a tree, 
- # tokenize it line-by-line and yield the raw string values.
+# iter_tree_entries is a generator that will take an OID of a tree, 
+# tokenize it line-by-line and yield the raw string values.
 def iter_tree_entries(oid):
 
     ensure_jgit_directory()
@@ -53,8 +57,8 @@ def iter_tree_entries(oid):
     
     
         
- # Recursively retrieves all the files and subdirectories within a tree object.
- # Returns a dictionary where keys are file/directory paths and values are their corresponding object IDs.
+# Recursively retrieves all the files and subdirectories within a tree object.
+# Returns a dictionary where keys are file/directory paths and values are their corresponding object IDs.
 def get_tree(oid, base_path = ''):
     
     ensure_jgit_directory()
@@ -79,8 +83,8 @@ def get_tree(oid, base_path = ''):
         
     return result  # Return the dictionary of paths and their corresponding OIDs
     
-    # Extracts the contents of a tree object and writes them to the filesystem.
-    # Creates the necessary directories and writes files at their respective paths.
+# Extracts the contents of a tree object and writes them to the filesystem.
+# Creates the necessary directories and writes files at their respective paths.
 def read_tree(tree_oid):
 
     ensure_jgit_directory()
@@ -92,8 +96,8 @@ def read_tree(tree_oid):
             f.write(data.get_object(oid))  # Write the content of the object (blob) to the file
     
 
-    # Recursively deletes all files and directories in the current directory,
-    # except for those that are ignored or cannot be removed.
+# Recursively deletes all files and directories in the current directory,
+# except for those that are ignored or cannot be removed.
 def empty_current_directory():
     
     ensure_jgit_directory()
@@ -141,8 +145,28 @@ def commit(message):
     return oid
 
 
-    # Determines if a path should be ignored by checking if it contains '.jgit'
-    # (i.e., it belongs to the .jgit directory used by this VCS).
+Commit = namedtuple('Commit', ['tree', 'parent', 'message'])
+
+def get_commit(oid):
+    parent = None
+
+    commit = data.get_object(oid, 'commit').decode()
+    lines = iter(commit.splitlines())
+
+    for line in itertools.takewhile(operator.truth, lines):
+        key, value = line.split(' ', 1)
+        if key == 'tree':
+            tree = value
+        elif key == 'parent':
+            parent = value
+        else:
+            assert False, f'Unknown field {key}'
+
+    message = '\n'.join(lines)
+    return Commit(tree=tree, parent=parent, message=message)
+
+# Determines if a path should be ignored by checking if it contains '.jgit'
+# (i.e., it belongs to the .jgit directory used by this VCS).
 def is_ignored(path):
     return '.jgit' in path.split('/')
 
