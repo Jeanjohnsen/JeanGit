@@ -62,6 +62,12 @@ def parse_args():
     checkout_parser.set_defaults(func=checkout)
     checkout_parser.add_argument('oid')
 
+    # Define the 'tag' command and set the function to call as 'tag'
+    tag_parser = commands.add_parser('tag')
+    tag_parser.set_defaults(func=tag)
+    tag_parser.add_argument('name')
+    tag_parser.add_argument('oid', nargs='?')
+
     # Parse the command-line arguments and return the parsed arguments object
     return parser.parse_args()
     
@@ -103,6 +109,11 @@ def log(args):
         
 def checkout(args):
     base.checkout(args.oid)
+
+def tag (args):
+    oid = args.oid or data.get_HEAD()
+    base.create_tag(args.name, oid)
+
 
 # Initializes a new ugit repository using the 'init' function from the 'data' module.
 # Then, prints a message indicating the initialization of the repository.

@@ -165,11 +165,22 @@ def get_commit(oid):
     message = '\n'.join(lines)
     return Commit(tree=tree, parent=parent, message=message)
 
+
+# allows us to travel conveniently in history. 
+# If we've made a handful of commits and we would like 
+# to revisit a previous commit, we can now "checkout" 
+# that commit to the working directory, play with it 
+# (compile, run tests, read code, whatever we want) 
+# and checkout the latest commit again to resume working where we've left.
 def checkout(oid):
     commit = get_commit(oid)
     read_tree(commit.tree)
-    data.set_HEAD()
+    data.set_HEAD(oid)
     
+
+def create_tag(name, oid):
+    # TODO create the tag method, yeah
+    pass
 
 
 # Determines if a path should be ignored by checking if it contains '.jgit'
