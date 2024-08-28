@@ -4,7 +4,6 @@ import os
 import string
 
 from collections import namedtuple
-
 from . import data
 
 
@@ -132,6 +131,8 @@ def get_commit(oid):
 
 def get_oid(name):
     #return data.get_ref(name) or name
+
+    if name == '@': name = 'HEAD'
 
     refs_to_try = [
         f'{name}',
