@@ -113,7 +113,7 @@ def k(args):
     oids = set()
     d = 'digraph commits {\n'
     
-    for refname, ref in data.iter_refs()
+    for refname, ref in data.iter_refs():
     
         d += f'"{refname}" [shape=note]\n'
         d += f'"{refname}" -> "{ref}"\n'
