@@ -128,6 +128,19 @@ def get_commit(oid):
     message = '\n'.join(lines)
     return Commit(tree=tree, parent=parent, message=message)
 
+def _iter_commits_and_parents(oids):
+    oids = set(oids)
+    visited = set()
+
+    while oids:
+        oid = oids.pop()
+        if not oid or oid in visited:
+            continue
+        yield oid
+        
+        commit = get_commit(oid)
+        oids.add(commit.parent)
+
 
 def get_oid(name):
     #return data.get_ref(name) or name
