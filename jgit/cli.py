@@ -108,34 +108,24 @@ def tag(args):
     #oid = args.oid or data.get_ref('HEAD')
     base.create_tag(args.name, args.oid)
 
-def k(args):
-    
-    oids = set()
-    d = 'digraph commits {\n'
-    
-    for refname, ref in data.iter_refs():
-    
-        d += f'"{refname}" [shape=note]\n'
-        d += f'"{refname}" -> "{ref}"\n'
-        
-        oids.add(ref)
-        
-    for oid in base._iter_commits_and_parents(oids):
-        
-        commit = base.get_commit(oid)
-        
-        d += f'"{oid}" [shape=box style=filled label="{oid[:10]}"]\n'
-        
-        if commit.parent:
-            dot += f'"{oid}" -> "{commit.parent}"\n'
+def k (args):
+    dot = 'digraph commits {\n'
 
-    d += '}'
-    print(d)
-            
-    with subprocess.Popen(['d', '-Tgtk', '/dev/stdin'],
-            stdin=subprocess.PIPE) as proces:
-        proces.communicate(d.encode())
-            
-    
-    #TODO
+    oids = set ()
+    for refname, ref in data.iter_refs ():
+        dot += f'"{refname}" [shape=note]\n'
+        dot += f'"{refname}" -> "{ref}"\n'
+        oids.add (ref)
+
+    for oid in base._iter_commits_and_parents (oids):
+        commit = base.get_commit (oid)
+        dot += f'"{oid}" [shape=box style=filled label="{oid[:10]}"]\n'
+        if commit.parent:
+            d += f'"{oid}" -> "{commit.parent}"\n'
+
+    dot += '}'
+    print (dot)
+
+    with subprocess.Popen (['dot', '-Tgtk', '/dev/stdin'], stdin=subprocess.PIPE) as proc:
+        proc.communicate (dot.encode ())
     
