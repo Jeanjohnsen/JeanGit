@@ -129,7 +129,7 @@ def k(args):
         if commit.parent:
             dot += f'"{oid}" -> "{commit.parent}"\n'
 
-    d += f'}'
+    d += '}'
     print(d)
             
     with subprocess.Popen(['d', '-Tgtk', '/dev/stdin'],
