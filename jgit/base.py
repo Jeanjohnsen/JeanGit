@@ -1,6 +1,7 @@
 import itertools
 import operator
 import os
+import string
 
 from collections import namedtuple
 
@@ -130,8 +131,22 @@ def get_commit(oid):
 
 
 def get_oid(name):
-    return data.get_ref(name) or name
+    #return data.get_ref(name) or name
 
+    refs_to_try = [
+        f'{name}',
+        f'refs/{name}',
+        f'refs/tags/{name}',
+        f'refs/heads/{name}',
+    ]
+
+    for refs in refs_to_try:
+        if data.get_ref(refs):
+            return data.get_ref(refs)
+    
+    is_hex = all(char in string.hexdigits for char in name):
+    if len(name) == 40 and is_hex:
+        return name
 
 def is_ignored(path):
     return '.jgit' in path.split('/')
