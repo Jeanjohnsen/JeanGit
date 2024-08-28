@@ -144,7 +144,7 @@ def get_oid(name):
         if data.get_ref(refs):
             return data.get_ref(refs)
     
-    is_hex = all(char in string.hexdigits for char in name):
+    is_hex = all(char in string.hexdigits for char in name)
     if len(name) == 40 and is_hex:
         return name
 
