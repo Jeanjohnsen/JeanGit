@@ -90,9 +90,8 @@ def commit(args):
 
 
 def log(args):
-    oid = args.oid
 
-    while oid:
+    for oid in base._iter_commits_and_parents({args.oid}):
         commit = base.get_commit(oid)
 
         print(f'commit {oid}\n')
@@ -119,13 +118,26 @@ def k (args):
 
     for oid in base._iter_commits_and_parents (oids):
         commit = base.get_commit (oid)
-        dot += f'"{oid}" [shape=box style=filled label="{oid[:10]}"]\n'
+        dot += f'"{oid}" [shape=box style=filled label="{oid[:10]}\n{commit.message}"]\n'
         if commit.parent:
-            d += f'"{oid}" -> "{commit.parent}"\n'
+            dot += f'"{oid}" -> "{commit.parent}"\n'
 
     dot += '}'
     print (dot)
 
-    with subprocess.Popen (['dot', '-Tgtk', '/dev/stdin'], stdin=subprocess.PIPE) as proc:
+    with subprocess.Popen (
+        ['dot', '-Tgtk', '/dev/stdin'],
+        stdin=subprocess.PIPE) as proc:
         proc.communicate (dot.encode ())
     
+    # # Im leaving this here for a pop-up visual representation
+    # temp_image = 'output.jpeg'
+
+    # # Generate the graph and save it as a JPEG image
+    # with open(temp_image, 'wb') as f:
+    #     proc = subprocess.Popen(['dot', '-Tjpeg'], stdin=subprocess.PIPE, stdout=f)
+    #     proc.communicate(input=dot.encode('utf-8'))
+
+    # # Open the image in Preview app
+    # os.system(f'open -a Preview.app {temp_image}')
+    # os.remove(temp_image)
