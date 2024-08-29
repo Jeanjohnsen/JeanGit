@@ -175,6 +175,14 @@ def get_oid(name):
     is_hex = all(char in string.hexdigits for char in name)
     if len(name) == 40 and is_hex:
         return name
+    
+def get_branch_name():
+    HEAD = data.get_ref ('HEAD', deref=False)
+    if not HEAD.symbolic:
+        return None
+    HEAD = HEAD.value
+    assert HEAD.startswith ('refs/heads/')
+    return os.path.relpath (HEAD, 'refs/heads')
 
 
 def is_ignored(path):
