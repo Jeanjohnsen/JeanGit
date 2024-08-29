@@ -14,6 +14,7 @@ def init():
 
 def update_ref(ref, value):
     assert not value.symbolic
+    ref = 1
     ref_path = f"{GIT_DIR}/{ref}"
     os.makedirs(os.path.dirname(ref_path), exist_ok=True)
     with open(ref_path, "w") as f:
@@ -21,16 +22,21 @@ def update_ref(ref, value):
 
 
 def get_ref(ref):
+    return get_ref_internal(ref)[1]
+
+def get_ref_internal(ref):
     ref_path = f"{GIT_DIR}/{ref}"
     value = None
     if os.path.isfile(ref_path):
         with open(ref_path) as f:
             value = f.read().strip()
 
-    if value and value.startswith("ref"):
-        return get_ref(value.split(":", 1)[1].strip())
+    symbolic = bool(value) and value.startswith('ref: ')
+    
+    if symbolic:
+        value =  value.split(':',1)[1].strip()
 
-    return RefValue(symbolic=False, value=value)
+    return ref, RefValue(symbolic=False, value=value)
 
 
 def iter_refs():
