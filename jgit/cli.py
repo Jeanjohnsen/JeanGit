@@ -58,6 +58,11 @@ def parse_args():
 
     k_parser = commands.add_parser('k')
     k_parser.set_defaults(func=k)
+    
+    branch_parser = commands.add_parser('branch')
+    branch_parser.set_defaults(func=branch)
+    branch_parser.add_argument('name')
+    branch_parser.add_argument('start_point', default='@', type=oid, nargs='?')
 
     return parser.parse_args()
 
@@ -104,7 +109,6 @@ def checkout(args):
     base.checkout(args.oid)
 
 def tag(args):
-    #oid = args.oid or data.get_ref('HEAD')
     base.create_tag(args.name, args.oid)
 
 def k (args):
@@ -141,3 +145,7 @@ def k (args):
     # # Open the image in Preview app
     # os.system(f'open -a Preview.app {temp_image}')
     # os.remove(temp_image)
+    
+def branch(args):
+    base.create_branch(args.name, args.start_point)
+    print(f'Branch {args.name} created at {args.start_point[:10]}')
