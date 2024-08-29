@@ -12,19 +12,19 @@ def init():
     os.makedirs(GIT_DIR)
     os.makedirs(f"{GIT_DIR}/objects")
 
-def update_ref(ref, value):
+def update_ref(ref, value, deref=True):
     assert not value.symbolic
-    ref = 1
+    ref = get_ref_internal(ref, deref)[0]
     ref_path = f"{GIT_DIR}/{ref}"
     os.makedirs(os.path.dirname(ref_path), exist_ok=True)
     with open(ref_path, "w") as f:
         f.write(value.value)
 
 
-def get_ref(ref):
-    return get_ref_internal(ref)[1]
+def get_ref(ref, deref=True):
+    return get_ref_internal(ref, deref)[1]
 
-def get_ref_internal(ref):
+def get_ref_internal(ref, deref=True):
     ref_path = f"{GIT_DIR}/{ref}"
     value = None
     if os.path.isfile(ref_path):
@@ -35,11 +35,13 @@ def get_ref_internal(ref):
     
     if symbolic:
         value =  value.split(':',1)[1].strip()
+        if deref:
+            return get_ref_internal(value, deref=True)
 
-    return ref, RefValue(symbolic=False, value=value)
+    return ref, RefValue(symbolic=symbolic, value=value)
 
 
-def iter_refs():
+def iter_refs(deref=True):
 
     refs = ["HEAD"]
 
@@ -48,7 +50,7 @@ def iter_refs():
         refs.extend(f"{root}/{name}" for name in filenames)
 
     for refname in refs:
-        yield refname, get_ref(refname)
+        yield refname, get_ref(refname, deref=deref)
 
 
 def hash_object(data, type_="blob"):
