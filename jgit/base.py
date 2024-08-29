@@ -81,7 +81,7 @@ def read_tree(tree_oid):
 def commit(message):
     commit = f"tree {write_tree()}\n"
 
-    HEAD = data.get_ref("HEAD")
+    HEAD = data.get_ref("HEAD").value
     if HEAD:
         commit += f"parent {HEAD}\n"
 
@@ -90,7 +90,7 @@ def commit(message):
 
     oid = data.hash_object(commit.encode(), "commit")
 
-    data.update_ref("HEAD", oid)
+    data.update_ref("HEAD", data.RefValue(symbolic=False, value=oid))
 
     return oid
 
@@ -98,11 +98,11 @@ def commit(message):
 def checkout(oid):
     commit = get_commit(oid)
     read_tree(commit.tree)
-    data.update_ref("HEAD", oid)
+    data.update_ref("HEAD", data.RefValue(symbolic=False, value=oid))
 
 
 def create_tag(name, oid):
-    data.update_ref(f"refs/tags/{name}", oid)
+    data.update_ref(f"refs/tags/{name}", data.RefValue(symbolic=False, value=oid))
 
 
 Commit = namedtuple("Commit", ["tree", "parent", "message"])
@@ -127,7 +127,7 @@ def get_commit(oid):
 
 
 def create_branch(name, oid):
-    data.update_ref(f"refs/heads/{name}", oid)
+    data.update_ref(f"refs/heads/{name}", data.RefValue(symbolic=False, value=oid))
 
 
 def _iter_commits_and_parents(oids):
@@ -143,7 +143,6 @@ def _iter_commits_and_parents(oids):
         commit = get_commit(oid)
         oids.appendleft(commit.parent)
 
-
 def get_oid(name):
     # return data.get_ref(name) or name
 
@@ -157,9 +156,9 @@ def get_oid(name):
         f"refs/heads/{name}",
     ]
 
-    for refs in refs_to_try:
-        if data.get_ref(refs):
-            return data.get_ref(refs)
+    for ref in refs_to_try:
+        if data.get_ref(ref).value:
+            return data.get_ref(ref)
 
     is_hex = all(char in string.hexdigits for char in name)
     if len(name) == 40 and is_hex:
