@@ -5,22 +5,23 @@ from collections import namedtuple
 
 
 GIT_DIR = ".jgit"
-RefValue = namedtuple('RefValue',['symbolic', 'value'])
+RefValue = namedtuple("RefValue", ["symbolic", "value"])
 
 
 def init():
     os.makedirs(GIT_DIR)
     os.makedirs(f"{GIT_DIR}/objects")
 
+
 def update_ref(ref, value, deref=True):
     ref = get_ref_internal(ref, deref)[0]
-    
+
     assert value.value
     if value.symbolic:
-        value = f'ref: {value.value}'
+        value = f"ref: {value.value}"
     else:
         value = value.value
-    
+
     ref_path = f"{GIT_DIR}/{ref}"
     os.makedirs(os.path.dirname(ref_path), exist_ok=True)
     with open(ref_path, "w") as f:
@@ -30,6 +31,7 @@ def update_ref(ref, value, deref=True):
 def get_ref(ref, deref=True):
     return get_ref_internal(ref, deref)[1]
 
+
 def get_ref_internal(ref, deref=True):
     ref_path = f"{GIT_DIR}/{ref}"
     value = None
@@ -37,10 +39,10 @@ def get_ref_internal(ref, deref=True):
         with open(ref_path) as f:
             value = f.read().strip()
 
-    symbolic = bool(value) and value.startswith('ref: ')
-    
+    symbolic = bool(value) and value.startswith("ref: ")
+
     if symbolic:
-        value =  value.split(':',1)[1].strip()
+        value = value.split(":", 1)[1].strip()
         if deref:
             return get_ref_internal(value, deref=True)
 

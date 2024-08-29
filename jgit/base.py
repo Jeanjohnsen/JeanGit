@@ -24,8 +24,7 @@ def write_tree(directory="."):
                 oid = write_tree(full)
             entries.append((entry.name, oid, type_))
 
-    tree = "".join(f"{type_} {oid} {name}\n" for name,
-                   oid, type_ in sorted(entries))
+    tree = "".join(f"{type_} {oid} {name}\n" for name, oid, type_ in sorted(entries))
     return data.hash_object(tree.encode(), "tree")
 
 
@@ -95,11 +94,18 @@ def commit(message):
     return oid
 
 
-def checkout(oid):
+def checkout(name):
+    oid = get_oid(name)
     commit = get_commit(oid)
     read_tree(commit.tree)
-    data.update_ref("HEAD", data.RefValue(symbolic=False, value=oid))
-
+    
+    if is_branch(name):
+        HEAD = data.RefValue(symbolic=True, value=f'refs/heads/{name}')
+    else:
+        HEAD = data.RefValue(symbolic=True, value=oid)
+        
+    HEAD = data.update_ref('HEAD', HEAD, deref=False)
+        
 
 def create_tag(name, oid):
     data.update_ref(f"refs/tags/{name}", data.RefValue(symbolic=False, value=oid))
@@ -128,6 +134,9 @@ def get_commit(oid):
 
 def create_branch(name, oid):
     data.update_ref(f"refs/heads/{name}", data.RefValue(symbolic=False, value=oid))
+    
+def is_branch(branch):
+    return data.get_ref(f'refs/heads/{branch}').value is not None
 
 
 def _iter_commits_and_parents(oids):
@@ -143,9 +152,9 @@ def _iter_commits_and_parents(oids):
         commit = get_commit(oid)
         oids.appendleft(commit.parent)
 
+
 def get_oid(name):
     # return data.get_ref(name) or name
-
     if name == "@":
         name = "HEAD"
 
