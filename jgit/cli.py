@@ -68,7 +68,7 @@ def parse_args():
 
 
 def init(args):
-    data.init()
+    base.init()
     print(f"Initialized empty jgit repository in {os.getcwd()}/{data.GIT_DIR}")
 
 
