@@ -6,9 +6,11 @@ import string
 from collections import deque, namedtuple
 from . import data
 
+
 def init():
     data.init()
-    data.update_ref('HEAD', data.RefValue(symbolic=True, value='refs/heads/master'))
+    data.update_ref("HEAD", data.RefValue(symbolic=True, value="refs/heads/master"))
+
 
 def write_tree(directory="."):
     entries = []
@@ -101,14 +103,14 @@ def checkout(name):
     oid = get_oid(name)
     commit = get_commit(oid)
     read_tree(commit.tree)
-    
+
     if is_branch(name):
-        HEAD = data.RefValue(symbolic=True, value=f'refs/heads/{name}')
+        HEAD = data.RefValue(symbolic=True, value=f"refs/heads/{name}")
     else:
         HEAD = data.RefValue(symbolic=True, value=oid)
-        
-    HEAD = data.update_ref('HEAD', HEAD, deref=False)
-        
+
+    HEAD = data.update_ref("HEAD", HEAD, deref=False)
+
 
 def create_tag(name, oid):
     data.update_ref(f"refs/tags/{name}", data.RefValue(symbolic=False, value=oid))
@@ -137,9 +139,15 @@ def get_commit(oid):
 
 def create_branch(name, oid):
     data.update_ref(f"refs/heads/{name}", data.RefValue(symbolic=False, value=oid))
-    
+
+
 def is_branch(branch):
-    return data.get_ref(f'refs/heads/{branch}').value is not None
+    return data.get_ref(f"refs/heads/{branch}").value is not None
+
+
+def iter_branches():
+    for refname, _ in data.iter_refs('refs/heads/'):
+        yield os.path.relpath(refname, 'refs/heads/')
 
 
 def _iter_commits_and_parents(oids):
@@ -175,14 +183,15 @@ def get_oid(name):
     is_hex = all(char in string.hexdigits for char in name)
     if len(name) == 40 and is_hex:
         return name
-    
+
+
 def get_branch_name():
-    HEAD = data.get_ref ('HEAD', deref=False)
+    HEAD = data.get_ref("HEAD", deref=False)
     if not HEAD.symbolic:
         return None
     HEAD = HEAD.value
-    assert HEAD.startswith ('refs/heads/')
-    return os.path.relpath (HEAD, 'refs/heads')
+    assert HEAD.startswith("refs/heads/")
+    return os.path.relpath(HEAD, "refs/heads")
 
 
 def is_ignored(path):

@@ -49,7 +49,7 @@ def get_ref_internal(ref, deref=True):
     return ref, RefValue(symbolic=symbolic, value=value)
 
 
-def iter_refs(deref=True):
+def iter_refs(predix='', deref=True):
 
     refs = ["HEAD"]
 
@@ -58,6 +58,8 @@ def iter_refs(deref=True):
         refs.extend(f"{root}/{name}" for name in filenames)
 
     for refname in refs:
+        if not refname in refs:
+            continue
         yield refname, get_ref(refname, deref=deref)
 
 
