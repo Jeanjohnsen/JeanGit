@@ -61,7 +61,7 @@ def parse_args():
 
     branch_parser = commands.add_parser("branch")
     branch_parser.set_defaults(func=branch)
-    branch_parser.add_argument("name")
+    branch_parser.add_argument("name", nargs='?')
     branch_parser.add_argument("start_point", default="@", type=oid, nargs="?")
 
     status_parser = commands.add_parser("status")
@@ -99,15 +99,10 @@ def commit(args):
 
 def log(args):
 
-    refs = {}
-    for refname, ref in data.iter_refs():
-        refs.setdefault(ref.value,[]).append(refname)
-        
     for oid in base._iter_commits_and_parents({args.oid}):
         commit = base.get_commit(oid)
 
-        refs_string = f' ({", ".join (refs[oid])})' if oid in refs else ''
-        print(f"commit {oid}{refs_string}\n")
+        print(f"commit {oid}\n")
         print(textwrap.indent(commit.message, "    "))
         print("")
 
